@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "experimentalDecorators": true,
+      "module": "commonjs",
+      "target": "ESNext",
+      "sourceMap": true,
+      "outDir": "./lib",
+      "declaration": true,
+      "strict": true,
+      "esModuleInterop": true
+    },
+    "include": [
+      "src",
+      "index.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+}

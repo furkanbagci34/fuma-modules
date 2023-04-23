@@ -1,0 +1,24 @@
+{
+  "name": "fumaweb-modules",
+  "version": "1.0.6",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rimraf ./lib && tsc ",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "author": "Fuma Web",
+  "license": "MIT",
+  "dependencies": {
+    "node-cron": "^3.0.2",
+    "nodemailer": "^6.9.1",
+    "pg": "^8.10.0",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.6.6"
+  }
+}
