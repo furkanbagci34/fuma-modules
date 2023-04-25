@@ -1,6 +1,6 @@
 import * as Enums from "./src/enums";
-import * as DbService from "./src/db";
+import * as Services from "./src/services";
 
 export {
-    Enums, DbService,
+    Enums, Services
 }
