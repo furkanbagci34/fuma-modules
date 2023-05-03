@@ -2,6 +2,7 @@ import { CronJob } from 'cron';
 import MailService from './mail.service';
 import DbService from './db.service';
 import { MailPriorityStatus } from '../enums';
+import { Enums } from '../..';
 
 export default class Cron {
 
@@ -23,7 +24,7 @@ export default class Cron {
 
             if (!HighPriorityMailList.rowCount) return
 
-            await this.mailService.sendEmail('recipient@example.com', '2 Minute Report', 'This is the 5 minute report.');
+            await this.sendMail(HighPriorityMailList)
         });
 
         this.cronJobNormal = new CronJob('0 */10 * * * *', async () => {
@@ -32,7 +33,7 @@ export default class Cron {
 
             if (!NormalPriorityMailList.rowCount) return
 
-            await this.mailService.sendEmail('recipient@example.com', '10 Minute Report', 'This is the 10 minute report.');
+            await this.sendMail(NormalPriorityMailList)
         });
 
         this.cronJobLow = new CronJob('0 */30 * * * *', async () => {
@@ -41,8 +42,7 @@ export default class Cron {
 
             if (!LowPriorityMailList.rowCount) return
 
-
-            await this.mailService.sendEmail('recipient@example.com', '30 Minute Report', 'This is the 30 minute report.');
+            await this.sendMail(LowPriorityMailList)
         });
 
         this.startJobs()
@@ -62,13 +62,20 @@ export default class Cron {
         this.cronJobLow.stop();
     }
 
-    async getMailList(PriorityStatus: any)
+    async getMailList(priorityStatus: any)
     {
-        return await this.dbService.query("select to, subject, content from mail where priority_status = $1", [PriorityStatus]);
+        return await this.dbService.query("select to, subject, content from mail where priority_status = $1 and send_status = $2", [priorityStatus,Enums.MailSendStatus.Waiting]);
     }
 
-    async sendMail(to: string, subject: string, content: string)
+    async sendMail(mailList: any)
     {
+        for(let i = 0; i < mailList.length; i++) {
+
+            
+        }
+
         return await this.mailService.sendEmail(to, subject, content)
     }
+
+
 }
