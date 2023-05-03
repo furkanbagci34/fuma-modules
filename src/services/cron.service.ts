@@ -1,6 +1,7 @@
 import { CronJob } from 'cron';
 import MailService from './mail.service';
 import DbService from './db.service';
+import Sleep from '../utils/sleep';
 import { MailPriorityStatus } from '../enums';
 import { Enums } from '../..';
 
@@ -18,11 +19,13 @@ export default class Cron {
         this.mailService = new MailService(smtpMailUser, smtpMailPass);
         this.dbService = new DbService(connectionString);
 
-        this.cronJobHigh = new CronJob('0 */2 * * * *', async () => { 
+        this.cronJobHigh = new CronJob('0 */1 * * * *', async () => { 
 
             const HighPriorityMailList = await this.getMailList(MailPriorityStatus.HighPriority)
 
-            if (!HighPriorityMailList.rowCount) return
+            console.log(HighPriorityMailList)
+
+            if (HighPriorityMailList.rowCount === 0) return
 
             await this.sendMail(HighPriorityMailList)
         });
@@ -31,7 +34,7 @@ export default class Cron {
 
             const NormalPriorityMailList = await this.getMailList(MailPriorityStatus.Normal)
 
-            if (!NormalPriorityMailList.rowCount) return
+            if (NormalPriorityMailList.rowCount === 0) return
 
             await this.sendMail(NormalPriorityMailList)
         });
@@ -40,12 +43,13 @@ export default class Cron {
 
             const LowPriorityMailList = await this.getMailList(MailPriorityStatus.Normal)
 
-            if (!LowPriorityMailList.rowCount) return
+            if (LowPriorityMailList.rowCount === 0) return
 
             await this.sendMail(LowPriorityMailList)
         });
 
         this.startJobs()
+
     }
 
     async startJobs()
@@ -64,18 +68,27 @@ export default class Cron {
 
     async getMailList(priorityStatus: any)
     {
-        return await this.dbService.query("select to, subject, content from mail where priority_status = $1 and send_status = $2", [priorityStatus,Enums.MailSendStatus.Waiting]);
+        return await this.dbService.query("select 'to', subject, content from mail where priority_status = $1 and send_status = $2", [priorityStatus,Enums.MailSendStatus.Waiting]);
     }
 
     async sendMail(mailList: any)
     {
-        for(let i = 0; i < mailList.length; i++) {
 
-            
+        let count = 0
+
+        for(let i = 0; i < mailList.rows.length; i++) {
+
+            count++
+
+            if(count == 20) {
+                count = 0
+                Sleep.sleep(150000)
+            }
+
+            const sendMailCallback = await this.mailService.sendEmail(mailList.rows[i].to, mailList.rows[i].subject, mailList.rows[i].content);
+
+            console.log(sendMailCallback)
         }
 
-        return await this.mailService.sendEmail(to, subject, content)
     }
-
-
 }
