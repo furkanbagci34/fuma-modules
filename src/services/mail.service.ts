@@ -23,7 +23,23 @@ export default class MailService {
             subject,
             text: body,
         };
+    
+        try {
+            const info = await this.transporter.sendMail(mailOptions);
+            const responseCode = parseInt(info.response.substring(0, 3));
 
-        return await this.transporter.sendMail(mailOptions);
+            if (responseCode >= 200 && responseCode < 300) {
+                console.log('E-posta başarıyla gönderildi.');
+                return true;
+            } 
+            else {
+                console.log('E-posta gönderilirken bir hata oluştu.');
+                return false;
+            }
+
+        } catch (err) {
+            console.log('E-posta gönderilirken bir hata oluştu: ' + err);
+            return false;
+        }
     }
 }

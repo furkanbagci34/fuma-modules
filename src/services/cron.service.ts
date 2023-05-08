@@ -23,8 +23,6 @@ export default class Cron {
 
             const HighPriorityMailList = await this.getMailList(MailPriorityStatus.HighPriority)
 
-            console.log(HighPriorityMailList)
-
             if (HighPriorityMailList.rowCount === 0) return
 
             await this.sendMail(HighPriorityMailList)
@@ -68,13 +66,14 @@ export default class Cron {
 
     async getMailList(priorityStatus: any)
     {
-        return await this.dbService.query("select 'to', subject, content from mail where priority_status = $1 and send_status = $2", [priorityStatus,Enums.MailSendStatus.Waiting]);
+        return await this.dbService.query(`select id, "to", subject, content from mail where priority_status = $1 and send_status = $2`, [priorityStatus,Enums.MailSendStatus.Waiting]);
     }
 
     async sendMail(mailList: any)
     {
 
         let count = 0
+        const sentMailIds = [];
 
         for(let i = 0; i < mailList.rows.length; i++) {
 
@@ -87,8 +86,11 @@ export default class Cron {
 
             const sendMailCallback = await this.mailService.sendEmail(mailList.rows[i].to, mailList.rows[i].subject, mailList.rows[i].content);
 
-            console.log(sendMailCallback)
+            if (sendMailCallback) {
+                sentMailIds.push(mailList.rows[i].id);
+            }
         }
 
+        await this.dbService.query(`update mail set send_status = $1, sended_date = now() where id IN (${sentMailIds.join(',')})`, [Enums.MailSendStatus.Sent])
     }
 }
